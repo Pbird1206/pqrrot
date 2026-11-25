@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 금촌고 2학년 미적분I 수행평가</title>
+    <!-- 글꼴: IBM Plex Sans KR(본문·제목), IBM Plex Mono(pH 미터 숫자) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 상단: 제목과 페이지 이동 탭 -->
+    <header class="topbar">
+        <div class="title">
+            <h1>약산 적정 시뮬레이터</h1>
+            <p>2026년 금촌고등학교 2학년 2학기 미적분I 수행평가</p>
+        </div>
+        <div class="header-side">
+            <!-- 오른쪽 위: 사이트 소개(누르면 펼쳐짐)와 만든 사람 -->
+            <div class="meta">
+                <details class="about" id="about">
+                    <summary>이 사이트는</summary>
+                    <div class="about-box">
+                        <p>
+                            2026년 금촌고등학교 2학년 2학기 미적분I 수행평가에 사용하기 위해 제작했습니다.
+                        </p>
+                        <ul>
+                            <li>탐구의 주 목적인 시뮬레이션을 위한 코드는 대부분 직접 작성했으며, 효율적이고 오류없는 작동을 위해 AI에게 일부 검토를 맡겼습니다.</li>
+                            <li>뷰렛, 비커, pH 표시 방법 등의 디자인 부분은 잘 다루지 못해 주로 AI가 구성했습니다.</li>
+                        </ul>
+                        <p class="about-small">그래프는 Chart.js로 그려짐.</p>
+                    </div>
+                </details>
+                <span class="maker">만든 사람 <strong>20511 박윤슬</strong></span>
+            </div>
+            <nav class="tabs" role="tablist" aria-label="페이지">
+                <button class="tab" role="tab" data-page="titrate">가상 적정</button>
+                <button class="tab" role="tab" data-page="slope">기울기</button>
+                <button class="tab" role="tab" data-page="bisection">이분법</button>
+                <button class="tab" role="tab" data-page="compare">실험 비교</button>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- ===================== 페이지 1: 가상 적정 ===================== -->
+        <section class="page" id="page-titrate">
+            <!-- 왼쪽 열(장치, 조건)과 오른쪽 열(적정 곡선)을 나란히 두어서
+                 버튼을 누르면서 그래프의 접선이 바뀌는 걸 한 화면에서 보게 함 -->
+            <div class="bench">
+                <!-- 왼쪽 위: 뷰렛·비커와 pH 미터, 버튼 -->
+                <div class="panel apparatus-panel">
+                    <div class="apparatus" id="apparatus">
+                        <div class="burette">
+                            <div class="burette-tube">
+                                <div class="burette-liquid" id="burette-liquid"></div>
+                            </div>
+                            <div class="stopcock"></div>
+                            <div class="burette-tip" id="burette-tip"></div>
+                        </div>
+                        <div class="beaker">
+                            <div class="liquid" id="liquid"></div>
+                        </div>
+                    </div>
+                    <div class="readout">
+                        <div class="meter-screen">
+                            <span class="meter-label">pH</span>
+                            <span id="ph-value" class="meter-digits">-</span>
+                        </div>
+                        <div class="ph-strip" aria-hidden="true">
+                            <div class="ph-marker" id="ph-marker"></div>
+                        </div>
+                        <div class="ph-scale" aria-hidden="true"><span>0</span><span>7</span><span>14</span></div>
+
+                        <p class="added">넣은 NaOH <strong><span id="added-vol">0.0</span> mL</strong></p>
+                        <!-- 왼쪽 열은 빼기, 오른쪽 열은 넣기 -->
+                        <div class="buttons stepper">
+                            <button id="sub-small" class="ghost">−0.1 mL</button>
+                            <button id="add-small">+0.1 mL</button>
+                            <button id="sub-large" class="ghost">−1 mL</button>
+                            <button id="add-large">+1 mL</button>
+                        </div>
+                        <button id="reset" class="link">처음부터 다시</button>
+                        <p class="note">지시약은 페놀프탈레인 (pH 8.2 이상에서 분홍)</p>
+                    </div>
+                </div>
+
+                <!-- 왼쪽 아래: 조건 -->
+                <div class="panel conditions">
+                    <h2>실험 조건</h2>
+                    <div class="control">
+                        <label for="acid-conc">아세트산 농도</label>
+                        <input type="range" id="acid-conc" min="0.01" max="0.50" step="0.01" value="0.10">
+                        <output><span id="acid-conc-value">0.10</span> M</output>
+                    </div>
+                    <div class="control">
+                        <label for="base-conc">NaOH 농도</label>
+                        <input type="range" id="base-conc" min="0.01" max="0.50" step="0.01" value="0.10">
+                        <output><span id="base-conc-value">0.10</span> M</output>
+                    </div>
+                    <div class="control">
+                        <label for="acid-vol">아세트산 부피</label>
+                        <input type="range" id="acid-vol" min="5.0" max="50.0" step="1" value="25">
+                        <output><span id="acid-vol-value">25</span> mL</output>
+                    </div>
+                    <p class="note">조건을 바꾸면 0 mL부터 다시 시작</p>
+                </div>
+
+                <!-- 오른쪽: 적정 곡선 (왼쪽 두 칸 높이만큼 길게) -->
+                <div class="panel chart-panel">
+                    <div class="panel-head">
+                        <h2>적정 곡선</h2>
+                        <div class="toggles">
+                            <label class="toggle"><input type="checkbox" id="tangent-toggle" checked> 접선</label>
+                            <label class="toggle"><input type="checkbox" id="point-toggle" checked> 현재 위치</label>
+                        </div>
+                    </div>
+                    <div class="chart-box"><canvas id="titration-chart"></canvas></div>
+                    <div class="chart-foot">
+                        <p id="tangent-info" class="readline">-</p>
+                        <button id="save-titration" class="save">그래프를 PNG로 저장</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== 페이지 2: 기울기 ===================== -->
+        <section class="page" id="page-slope" hidden>
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>적정 곡선의 기울기</h2>
+                    <div class="toggles">
+                        <label class="toggle"><input type="checkbox" id="log-toggle" checked> 세로축 로그 눈금</label>
+                    </div>
+                </div>
+                <div class="lead">
+                    적정 곡선의 각 점에서 접선 기울기(ΔpH/ΔV)를 구해 이은 그래프
+                    <ul>
+                        <li>당량점 : 제일 높이 솟은 곳</li>
+                        <li>반당량점 : 완충 구간에서 제일 낮은 곳</li>
+                    </ul>
+                </div>
+                <div class="chart-box"><canvas id="slope-chart"></canvas></div>
+                <p class="note">
+                    주황 점은 가상 적정 화면에서 지금 그려진 접선의 기울기
+                </p>
+                <div id="analysis" class="result"></div>
+                <button id="save-slope" class="save">그래프를 PNG로 저장</button>
+            </div>
+        </section>
+
+        <!-- ===================== 페이지 3: 이분법 ===================== -->
+        <section class="page" id="page-bisection" hidden>
+            <div class="panel">
+                <h2>이분법으로 pH 구하기</h2>
+                <p class="lead">
+                    pH는 전하 균형식 f(pH) = 0의 근이다. f(0) &gt; 0, f(14) &lt; 0이고 f는 연속이므로
+                    사잇값 정리에 의해 0과 14 사이에 근이 있다. 이 구간을 반씩 잘라 가면서 근을 좁혀 간다.
+                </p>
+                <div class="chart-box"><canvas id="bisection-chart"></canvas></div>
+                <p id="bisection-caption" class="note"></p>
+                <button id="save-bisection" class="save">그래프를 PNG로 저장</button>
+            </div>
+            <div class="panel">
+                <h2>단계별 구간</h2>
+                <div class="table-wrap">
+                    <table id="bisection-table">
+                        <thead>
+                            <tr>
+                                <th>단계</th><th>구간 [low, high]</th><th>가운데 mid</th>
+                                <th>f(mid)</th><th>부호</th><th>다음 구간</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <p id="bisection-summary" class="result"></p>
+            </div>
+        </section>
+
+        <!-- ===================== 페이지 4: 실험 비교 ===================== -->
+        <section class="page" id="page-compare" hidden>
+            <div class="panel narrow">
+                <h2>실험 데이터와 비교</h2>
+                <p class="lead">
+                    측정값을 한 줄에 "부피(mL), pH" 형식으로 붙여 넣음.
+                </p>
+                <p class="lead">
+                    넣은 데이터는 적정 곡선과 기울기 그래프에 초록 점으로 같이 찍힘.
+                </p>
+                <textarea id="exp-data" rows="10" placeholder="0, 2.90&#10;5, 4.15&#10;10, 4.58&#10;..."></textarea>
+                <div class="buttons">
+                    <button id="compare">비교하기</button>
+                    <button id="clear-data" class="ghost">데이터 지우기</button>
+                </div>
+                <div id="compare-result" class="result"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="chem.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+/* ===================================================================
+   style.css : 화면 꾸미기
+   선택자 { 속성: 값; } 형식.  .이름 = class,  #이름 = id
+   =================================================================== */
+
+/* 페이지 전체 */
+body {
+  font-family: "Pretendard", "Malgun Gothic", sans-serif;
+  background: #f3f4f6;
+  color: #1f2937;
+  max-width: 900px;      /* 화면이 넓어도 이 폭까지만 */
+  margin: 0 auto;        /* 가운데 정렬 */
+  padding: 24px 16px;
+}
+
+h1 { margin-bottom: 4px; }
+h2 { font-size: 1.15rem; margin-top: 0; }
+.subtitle { color: #6b7280; margin-top: 0; }
+
+/* 흰 상자(카드) */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* 슬라이더 한 줄: 이름표 | 슬라이더 | 숫자 */
+.control {
+  display: grid;
+  grid-template-columns: 150px 1fr 50px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.control span { font-weight: bold; text-align: right; }
+
+/* 작은 회색 설명 글 */
+.hint { color: #6b7280; font-size: 0.9rem; }
+
+/* 계산 결과 상자 */
+.info {
+  background: #eff6ff;
+  border-radius: 8px;
+  padding: 12px;
+  line-height: 1.7;
+}
+.info:empty { display: none; } /* 내용이 없으면 숨김 */
+
+/* 가상 실험: 비커와 숫자를 옆으로 나란히 */
+.experiment {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  flex-wrap: wrap; /* 휴대폰처럼 좁으면 아래로 내려감 */
+}
+.readout p { font-size: 1.2rem; margin: 6px 0; }
+.readout span { font-weight: bold; }
+
+/* 비커: 위가 뚫린 유리 그릇 모양 */
+.beaker {
+  position: relative;
+  width: 120px;
+  height: 160px;
+  border: 3px solid #9ca3af;
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.6);
+}
+/* 비커 속 액체: 아래에 붙어서 높이와 색이 바뀜 */
+.liquid {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 40%;
+  background: rgba(236, 72, 153, 0.1);
+  transition: height 0.3s, background-color 0.3s; /* 부드럽게 변하기 */
+}
+
+/* 버튼 */
+.buttons { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+button:hover { background: #1d4ed8; }
+button.minus { background: #93c5fd; color: #1e3a8a; } /* 되돌리기 버튼은 연한 색 */
+button.minus:hover { background: #60a5fa; }
+button.secondary { background: #6b7280; }
+button.secondary:hover { background: #4b5563; }
+
+/* 실험 데이터 입력 칸 */
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: Consolas, monospace;
+  font-size: 0.95rem;
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+/* 체크박스 여러 개를 한 줄에 */
+.toggles { display: flex; gap: 20px; flex-wrap: wrap; }
+
+/* 접선 보기 체크박스 */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+.toggle input { width: 18px; height: 18px; cursor: pointer; }
+
+/* 그래프가 너무 커지지 않게 */
+canvas { max-height: 420px; }
+
+/* 그래프 이미지 저장 버튼 */
+button.save { background: #059669; margin-top: 8px; }
+button.save:hover { background: #047857; }
+
+/* 이분법 표 */
+.table-wrap { overflow-x: auto; margin-top: 12px; } /* 좁은 화면에서는 옆으로 스크롤 */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9rem;
+  font-family: Consolas, monospace;
+}
+th, td {
+  border: 1px solid #d1d5db;
+  padding: 6px 8px;
+  text-align: center;
+  white-space: nowrap;
+}
+th { background: #f3f4f6; font-family: "Malgun Gothic", sans-serif; }
+td.plus { color: #dc2626; font-weight: bold; }       /* f > 0 : 빨강 */
+td.minus-sign { color: #2563eb; font-weight: bold; } /* f ≤ 0 : 파랑 */

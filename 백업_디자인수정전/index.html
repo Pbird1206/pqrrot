@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>미적분I 수행</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>약산 적정 시뮬레이터</h1>
+    <p class="subtitle">아세트산(CH₃COOH)을 NaOH로 적정할 때의 pH 변화</p>
+
+    <!-- ① 조건 설정: 1단계에서 만든 슬라이더 -->
+    <section class="card">
+        <h2>① 조건 설정</h2>
+        <div class="control">
+            <label for="acid-conc">아세트산 농도 (M)</label>
+            <input type="range" id="acid-conc" min="0.01" max="0.50" step="0.01" value="0.10">
+            <span id="acid-conc-value">0.10</span>
+        </div>
+        <div class="control">
+            <label for="base-conc">NaOH 농도 (M)</label>
+            <input type="range" id="base-conc" min="0.01" max="0.50" step="0.01" value="0.10">
+            <span id="base-conc-value">0.10</span>
+        </div>
+        <div class="control">
+            <label for="acid-vol">아세트산 부피 (mL)</label>
+            <input type="range" id="acid-vol" min="5.0" max="50.0" step="1" value="25">
+            <span id="acid-vol-value">25</span>
+        </div>
+        <p class="hint">조건을 바꾸면 곡선이 다시 계산되고, 가상 실험은 처음부터 다시 시작합니다.</p>
+    </section>
+
+    <!-- ② 가상 실험: 버튼으로 NaOH를 넣고 pH와 비커 색을 확인 -->
+    <section class="card">
+        <h2>② 가상 실험</h2>
+        <div class="experiment">
+            <div class="beaker">
+                <div class="liquid" id="liquid"></div>
+            </div>
+            <div class="readout">
+                <p>넣은 NaOH : <span id="added-vol">0.0</span> mL</p>
+                <p>현재 pH : <span id="ph-value">-</span></p>
+                <div class="buttons">
+                    <button id="sub-large" class="minus">−1 mL</button>
+                    <button id="sub-small" class="minus">−0.1 mL</button>
+                    <button id="add-small">+0.1 mL</button>
+                    <button id="add-large">+1 mL</button>
+                    <button id="reset" class="secondary">처음부터</button>
+                </div>
+                <p class="hint">지시약: 페놀프탈레인 (pH 약 8.2 이상에서 분홍색)</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ③ 적정 곡선: 현재 위치(빨간 점)의 접선을 실시간 표시 -->
+    <section class="card">
+        <h2>③ 적정 곡선</h2>
+        <div class="toggles">
+            <label class="toggle">
+                <input type="checkbox" id="tangent-toggle" checked>
+                접선 보기
+            </label>
+            <label class="toggle">
+                <input type="checkbox" id="point-toggle" checked>
+                현재 위치(빨간 점) 보기
+            </label>
+        </div>
+        <canvas id="titration-chart"></canvas>
+        <p class="hint">빨간 점(현재 위치)에서의 접선과 기울기(미분계수)가 NaOH를 넣을 때마다 실시간으로 바뀝니다.</p>
+        <p id="tangent-info" class="info">-</p>
+        <button id="save-titration" class="save">그래프 이미지 저장 (PNG)</button>
+    </section>
+
+    <!-- ④ 기울기 그래프와 분석 결과 -->
+    <section class="card">
+        <h2>④ 기울기 분석 (ΔpH / ΔV)</h2>
+        <label class="toggle">
+            <input type="checkbox" id="log-toggle" checked>
+            세로축 로그 눈금
+        </label>
+        <canvas id="slope-chart"></canvas>
+        <p class="hint">빨간 점은 ③의 접선 기울기와 같은 값입니다. 적정 곡선의 기울기를 그래프로 그린 것이 이 그래프예요.
+            로그 눈금에서는 아주 작은 기울기(완충 구간)와 아주 큰 기울기(당량점)를 함께 볼 수 있습니다.
+            (로그 눈금에는 0 이하의 값이 표시되지 않아서, 실험 데이터의 음수 기울기는 일반 눈금에서만 보입니다.)</p>
+        <div id="analysis" class="info"></div>
+        <button id="save-slope" class="save">그래프 이미지 저장 (PNG)</button>
+    </section>
+
+    <!-- ⑤ 이분법 과정: 사잇값 정리 -->
+    <section class="card">
+        <h2>⑤ 이분법으로 pH 구하기 (사잇값 정리)</h2>
+        <p class="hint">
+            현재 위치(② 가상 실험의 부피)에서 전하 균형식 f(pH) = 0 의 근을 찾는 과정입니다.
+            f(0) &gt; 0, f(14) &lt; 0 이고 f가 연속이므로, 사잇값 정리에 의해 0과 14 사이에 근이 반드시 있습니다.
+        </p>
+        <canvas id="bisection-chart"></canvas>
+        <p id="bisection-caption" class="hint"></p>
+        <button id="save-bisection" class="save">그래프 이미지 저장 (PNG)</button>
+        <div class="table-wrap">
+            <table id="bisection-table">
+                <thead>
+                    <tr>
+                        <th>단계</th><th>구간 [low, high]</th><th>가운데 mid</th>
+                        <th>f(mid)</th><th>부호</th><th>다음 구간</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <p id="bisection-summary" class="info"></p>
+    </section>
+
+    <!-- ⑥ 실험 데이터 비교 -->
+    <section class="card">
+        <h2>⑥ 실험 데이터와 비교</h2>
+        <p class="hint">한 줄에 "부피(mL), pH" 형식으로 붙여 넣으세요. 엑셀의 두 열을 복사해도 됩니다. 결과는 ③, ④ 그래프에 초록색으로 표시됩니다.</p>
+        <textarea id="exp-data" rows="8" placeholder="0, 2.90&#10;5, 4.15&#10;10, 4.58&#10;..."></textarea>
+        <div class="buttons">
+            <button id="compare">비교하기</button>
+            <button id="clear-data" class="secondary">지우기</button>
+        </div>
+        <div id="compare-result" class="info"></div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="chem.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
